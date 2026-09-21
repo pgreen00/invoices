@@ -4,21 +4,6 @@
   margin: 0.6in 0.65in;
 }
 
-@media print {
-  body { background: #fff; }
-  .sheet {
-    margin: 0;
-    padding: 0;
-    box-shadow: none;
-    width: auto;
-    min-height: 0;
-  }
-  .no-print { display: none !important; }
-  thead { display: table-header-group; }
-  tr { page-break-inside: avoid; }
-  .totals-block, .footer-note { page-break-inside: avoid; }
-}
-
 /* ---------- Base ---------- */
 * { box-sizing: border-box; }
 
@@ -250,4 +235,33 @@ table.totals tr.due td:first-child { color: #fff; }
   background: #1c1f23;
   color: #fff;
   cursor: pointer;
+}
+
+/* ---------- Print overrides ----------
+   Keep this block last. These selectors have the same specificity as their
+   screen counterparts above, so source order is the only thing making them
+   win. Moved earlier in the file, the screen `.sheet` and `body` rules would
+   override them and the page background, drop shadow and doubled padding
+   would all end up on paper. */
+@media print {
+  body {
+    background: #fff;
+  }
+
+  /* On paper the page box already supplies the margin, so the sheet is just
+     the content: no width, centring, padding or shadow of its own. */
+  .sheet {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .no-print { display: none !important; }
+
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  .totals-block, .footer-note { page-break-inside: avoid; }
 }

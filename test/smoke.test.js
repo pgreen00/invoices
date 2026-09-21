@@ -227,6 +227,15 @@ describe('invoice lifecycle', () => {
     assert.doesNotMatch(html, /Mar 25/); // blank row dropped
   });
 
+  it('prints the phone above the email, each on its own line', async () => {
+    const html = await (await get(invoiceUrl)).text();
+    assert.match(
+      html,
+      /<div>\(512\) 555-0142<\/div>\s*<div>billing@ravenline\.dev<\/div>/,
+      'phone should render on its own line immediately above the email'
+    );
+  });
+
   it('shows the invoice in the list with computed totals', async () => {
     const html = await (await get('/')).text();
     assert.match(html, /\$1,815\.00/);
@@ -322,6 +331,29 @@ describe('invoice lifecycle', () => {
       .prepare('SELECT COUNT(*) AS n FROM line_items WHERE invoice_id = ?')
       .get(id);
     assert.equal(orphans.n, 0);
+  });
+});
+
+describe('print stylesheet', () => {
+  const css = fs.readFileSync(new URL('../public/print.css', import.meta.url), 'utf8');
+
+  // This guards a bug that is invisible on screen: the @media print block and
+  // the screen rules it overrides have equal specificity, so if the print
+  // block is moved above them it silently loses the cascade and the page
+  // background, drop shadow and doubled padding all end up on paper.
+  it('declares print overrides after the screen rules they override', () => {
+    const printAt = css.indexOf('@media print');
+    assert.ok(printAt > -1, 'expected an @media print block');
+    assert.ok(printAt > css.indexOf('body {'), 'print block must come after body');
+    assert.ok(printAt > css.indexOf('.sheet {'), 'print block must come after .sheet');
+  });
+
+  it('strips the screen-only chrome when printing', () => {
+    const printBlock = css.slice(css.indexOf('@media print'));
+    assert.match(printBlock, /box-shadow:\s*none/);
+    assert.match(printBlock, /margin:\s*0;/);
+    assert.match(printBlock, /padding:\s*0;/);
+    assert.match(printBlock, /display:\s*none\s*!important/);
   });
 });
 

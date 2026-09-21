@@ -26,13 +26,13 @@
     <div>
       <h1 class="biz-name">{{invoice.business_name}}</h1>
       <div class="biz-meta">
-        {{#if invoice.business_tagline}}{{invoice.business_tagline}}<br>{{/if}}
-        {{#if invoice.business_address_line1}}{{invoice.business_address_line1}}<br>{{/if}}
-        {{#if invoice.business_address_line2}}{{invoice.business_address_line2}}<br>{{/if}}
-        {{#if invoice.business_city_state_zip}}{{invoice.business_city_state_zip}}<br>{{/if}}
-        {{#if invoice.business_email}}{{invoice.business_email}}{{/if}}
-        {{#if invoice.business_phone}} &nbsp;&middot;&nbsp; {{invoice.business_phone}}{{/if}}
-        {{#if invoice.business_tax_id}}<br>{{invoice.business_tax_id}}{{/if}}
+        {{#if invoice.business_tagline}}<div>{{invoice.business_tagline}}</div>{{/if}}
+        {{#if invoice.business_address_line1}}<div>{{invoice.business_address_line1}}</div>{{/if}}
+        {{#if invoice.business_address_line2}}<div>{{invoice.business_address_line2}}</div>{{/if}}
+        {{#if invoice.business_city_state_zip}}<div>{{invoice.business_city_state_zip}}</div>{{/if}}
+        {{#if invoice.business_phone}}<div>{{invoice.business_phone}}</div>{{/if}}
+        {{#if invoice.business_email}}<div>{{invoice.business_email}}</div>{{/if}}
+        {{#if invoice.business_tax_id}}<div>{{invoice.business_tax_id}}</div>{{/if}}
       </div>
     </div>
     <div class="invoice-title">
