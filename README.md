@@ -79,16 +79,32 @@ other. Assumes one writer at a time, which suits a single-user local app.
 due-date readout, and the add-row button are conveniences; the server
 recomputes and revalidates everything on save.
 
+## Icons
+
+The favicon is a clipboard drawn as a handful of rounded rectangles in
+`public/icon.svg`, so it stays crisp at any size. `public/icon-square.svg` is
+the same artwork on a full-bleed background, used for the Apple touch icon
+because iOS applies its own rounded mask.
+
+The PNGs and `favicon.ico` were rasterized from those two SVGs and checked in,
+so there is nothing to build. If you ever change the artwork, they were made
+with macOS's `qlmanage -t -s 512 -o . icon.svg` and `sips -z 192 192`.
+
+`manifest.webmanifest` gives the bookmark a name, a theme colour, and a
+`standalone` display mode, so Chrome's "Install page as app" produces a
+window without browser chrome if you want one.
+
 ## Tests
 
 ```sh
 npm test
 ```
 
-27 tests covering money and date helpers, page rendering, the full invoice
+31 tests covering money and date helpers, page rendering, the full invoice
 lifecycle (create, validate, edit, repeat, delete, cascade), auto-numbering,
-and the snapshot guarantee. Uses the built-in Node test runner against a
-throwaway database in a temp directory — no fixtures to clean up.
+the snapshot guarantee, and that every icon the manifest declares actually
+resolves. Uses the built-in Node test runner against a throwaway database in a
+temp directory — no fixtures to clean up.
 
 ## Layout
 
@@ -105,5 +121,5 @@ src/
   middleware.js   form body parser, static files, error page
   render.js       Handlebars setup and helpers
 views/            .hbs templates (layout, invoices, clients, settings)
-public/           app.css, print.css, app.js
+public/           app.css, print.css, app.js, icons, manifest
 ```

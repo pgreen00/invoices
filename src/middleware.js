@@ -43,7 +43,24 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.ico': 'image/x-icon',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
 };
+
+function sendFile(ctx, file) {
+  let stat;
+  try {
+    stat = fs.statSync(file);
+  } catch {
+    return false;
+  }
+  if (!stat.isFile()) return false;
+
+  ctx.type = MIME[path.extname(file)] ?? 'application/octet-stream';
+  ctx.set('Cache-Control', 'no-cache');
+  ctx.length = stat.size;
+  ctx.body = fs.createReadStream(file);
+  return true;
+}
 
 export function staticFiles(prefix, root) {
   const dir = path.resolve(root);
@@ -58,18 +75,24 @@ export function staticFiles(prefix, root) {
     const file = path.resolve(dir, relative);
     if (file !== dir && !file.startsWith(dir + path.sep)) return next();
 
-    let stat;
-    try {
-      stat = fs.statSync(file);
-    } catch {
-      return next();
-    }
-    if (!stat.isFile()) return next();
+    if (!sendFile(ctx, file)) return next();
+  };
+}
 
-    ctx.type = MIME[path.extname(file)] ?? 'application/octet-stream';
-    ctx.set('Cache-Control', 'no-cache');
-    ctx.length = stat.size;
-    ctx.body = fs.createReadStream(file);
+/**
+ * Serves a fixed allow-list of files from the site root, for the handful of
+ * things that browsers expect there: /favicon.ico, /manifest.webmanifest and
+ * friends.
+ */
+export function rootFiles(root, names) {
+  const dir = path.resolve(root);
+  const allowed = new Set(names.map((name) => `/${name}`));
+
+  return async (ctx, next) => {
+    if (ctx.method !== 'GET' && ctx.method !== 'HEAD') return next();
+    if (!allowed.has(ctx.path)) return next();
+
+    if (!sendFile(ctx, path.join(dir, ctx.path.slice(1)))) return next();
   };
 }
 

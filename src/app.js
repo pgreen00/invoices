@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Koa from 'koa';
 
-import { formBody, staticFiles, errorHandler } from './middleware.js';
+import { formBody, staticFiles, rootFiles, errorHandler } from './middleware.js';
 import { invoiceRoutes } from './routes/invoices.js';
 import { clientRoutes } from './routes/clients.js';
 import { settingsRoutes } from './routes/settings.js';
@@ -13,8 +13,20 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 export function createApp() {
   const app = new Koa();
 
+  const publicDir = path.join(ROOT, 'public');
+
   app.use(errorHandler());
-  app.use(staticFiles('/assets', path.join(ROOT, 'public')));
+  app.use(staticFiles('/assets', publicDir));
+  app.use(
+    rootFiles(publicDir, [
+      'favicon.ico',
+      'icon.svg',
+      'icon-192.png',
+      'icon-512.png',
+      'apple-touch-icon.png',
+      'manifest.webmanifest',
+    ])
+  );
   app.use(formBody());
 
   for (const router of [invoiceRoutes, clientRoutes, settingsRoutes]) {

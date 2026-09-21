@@ -120,6 +120,45 @@ describe('pages render', () => {
     assert.notEqual(res.status, 200);
   });
 
+  it('serves the favicon and manifest from the site root', async () => {
+    const expected = {
+      '/favicon.ico': /image\/x-icon/,
+      '/icon.svg': /image\/svg\+xml/,
+      '/icon-192.png': /image\/png/,
+      '/icon-512.png': /image\/png/,
+      '/apple-touch-icon.png': /image\/png/,
+      '/manifest.webmanifest': /application\/manifest\+json/,
+    };
+
+    for (const [p, type] of Object.entries(expected)) {
+      const res = await get(p);
+      assert.equal(res.status, 200, `${p} returned ${res.status}`);
+      assert.match(res.headers.get('content-type'), type, p);
+    }
+  });
+
+  it('resolves every icon the manifest declares', async () => {
+    const manifest = await (await get('/manifest.webmanifest')).json();
+    assert.equal(manifest.start_url, '/');
+    assert.ok(manifest.icons.length > 0);
+
+    for (const icon of manifest.icons) {
+      assert.equal((await get(icon.src)).status, 200, `manifest icon ${icon.src}`);
+    }
+  });
+
+  it('only serves the allow-listed files from the root', async () => {
+    // public/app.css is reachable at /assets/app.css but must not leak to /.
+    assert.equal((await get('/app.css')).status, 404);
+  });
+
+  it('links the icons and manifest from the layout', async () => {
+    const html = await (await get('/')).text();
+    assert.match(html, /<link rel="icon" href="\/icon\.svg"/);
+    assert.match(html, /<link rel="manifest" href="\/manifest\.webmanifest">/);
+    assert.match(html, /name="theme-color"/);
+  });
+
   it('404s unknown routes', async () => {
     assert.equal((await get('/nope')).status, 404);
   });
