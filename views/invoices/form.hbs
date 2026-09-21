@@ -1,0 +1,191 @@
+<header class="page-head">
+  <h1>{{#if (eq mode 'edit')}}Edit invoice {{invoice.number}}{{else}}New invoice{{/if}}</h1>
+  {{#if (eq mode 'edit')}}
+    <a class="btn" href="/invoices/{{invoiceId}}">View &amp; print</a>
+  {{/if}}
+</header>
+
+{{#if errors.length}}
+  <div class="callout callout-error">
+    <strong>Please fix the following:</strong>
+    <ul>{{#each errors}}<li>{{this}}</li>{{/each}}</ul>
+  </div>
+{{/if}}
+
+{{#unless hasClients}}
+  <div class="callout">
+    No clients yet — <a href="/clients/new">add a client</a> first.
+  </div>
+{{/unless}}
+
+<form method="post" action="{{action}}" id="invoice-form" autocomplete="off">
+
+  <section class="card">
+    <h2>Billing</h2>
+    <div class="field-grid">
+      <label class="field span-2">
+        <span>Client</span>
+        <select name="client_id" id="client-select" required>
+          <option value="">— Select a client —</option>
+          {{#each clients}}
+            <option value="{{id}}" {{#if (eq id ../invoice.client_id)}}selected{{/if}}>{{name}}</option>
+          {{/each}}
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Invoice number</span>
+        <input type="text" name="number" value="{{invoice.number}}" placeholder="{{nextNumber}}">
+        <small>Leave blank to use {{nextNumber}}</small>
+      </label>
+
+      <label class="field span-2">
+        <span>Project</span>
+        <input type="text" name="project_name" id="project-name" value="{{invoice.project_name}}"
+               placeholder="Order Management Platform — Phase 2">
+      </label>
+
+      <label class="field">
+        <span>Contract reference</span>
+        <input type="text" name="contract_ref" id="contract-ref" value="{{invoice.contract_ref}}"
+               placeholder="MSA dated 2024-01-15">
+      </label>
+
+      <label class="field">
+        <span>PO number</span>
+        <input type="text" name="po_number" id="po-number" value="{{invoice.po_number}}" placeholder="NW-PO-4471">
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Dates &amp; terms</h2>
+    <div class="field-grid">
+      <label class="field">
+        <span>Invoice date</span>
+        <input type="date" name="invoice_date" id="invoice-date" value="{{invoice.invoice_date}}" required>
+      </label>
+
+      <label class="field">
+        <span>Terms (days)</span>
+        <input type="number" name="terms_days" id="terms-days" value="{{invoice.terms_days}}" min="0" step="1">
+      </label>
+
+      <div class="field">
+        <span>Due date</span>
+        <output id="due-date" class="readout">—</output>
+        <small>Calculated from invoice date + terms</small>
+      </div>
+
+      <label class="field">
+        <span>Service period starts</span>
+        <input type="date" name="period_start" id="period-start" value="{{invoice.period_start}}">
+      </label>
+
+      <label class="field">
+        <span>Service period ends</span>
+        <input type="date" name="period_end" id="period-end" value="{{invoice.period_end}}">
+      </label>
+
+      <div class="field">
+        <span>&nbsp;</span>
+        <button type="button" class="btn" id="fill-week">Fill Mon–Fri from start date</button>
+        <small>Rewrites the dates on the first five rows</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Line items</h2>
+      <button type="button" class="btn btn-sm" id="add-row">Add row</button>
+    </div>
+
+    <table class="grid items-grid" id="items-table">
+      <thead>
+        <tr>
+          <th class="col-date">Date</th>
+          <th>Description</th>
+          <th class="col-hours right">Hours</th>
+          <th class="col-rate right">Rate</th>
+          <th class="col-amount right">Amount</th>
+          <th class="col-remove"></th>
+        </tr>
+      </thead>
+      <tbody id="items-body">
+        {{#each items}}
+          <tr class="item-row">
+            <td><input type="date" name="item_date" value="{{work_date}}"></td>
+            <td>
+              <input type="text" name="item_description" value="{{description}}" placeholder="Checkout service refactor">
+              <input type="text" name="item_detail" class="detail-input" value="{{detail}}"
+                     placeholder="Optional detail line shown in smaller text">
+            </td>
+            <td><input type="number" name="item_hours" class="right" value="{{hours}}" min="0" step="0.25" placeholder="0"></td>
+            <td><input type="number" name="item_rate" class="right" value="{{rate}}" min="0" step="0.01"></td>
+            <td class="right nowrap amount-cell">$0.00</td>
+            <td class="right"><button type="button" class="btn btn-sm btn-quiet remove-row" title="Remove row">×</button></td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div class="totals-row">
+      <label class="field">
+        <span>Reimbursable expenses</span>
+        <input type="number" name="expenses" id="expenses" value="{{invoice.expenses}}" min="0" step="0.01">
+      </label>
+      <label class="field">
+        <span>Discount</span>
+        <input type="number" name="discount" id="discount" value="{{invoice.discount}}" min="0" step="0.01">
+      </label>
+      <div class="running-total">
+        <div><span>Hours</span><strong id="total-hours">0.00</strong></div>
+        <div><span>Subtotal</span><strong id="subtotal">$0.00</strong></div>
+        <div class="grand"><span>Total</span><strong id="grand-total">$0.00</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Footer text</h2>
+    <div class="field-grid">
+      <label class="field span-3">
+        <span>Payment instructions</span>
+        <textarea name="payment_instructions" rows="4">{{invoice.payment_instructions}}</textarea>
+        <small>One line per row</small>
+      </label>
+      <label class="field span-3">
+        <span>Notes &amp; terms</span>
+        <textarea name="notes" rows="4">{{invoice.notes}}</textarea>
+      </label>
+      <label class="field span-3">
+        <span>Closing message</span>
+        <input type="text" name="footer_message" value="{{invoice.footer_message}}">
+      </label>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">
+      {{#if (eq mode 'edit')}}Save changes{{else}}Generate invoice{{/if}}
+    </button>
+    <a class="btn" href="{{#if (eq mode 'edit')}}/invoices/{{invoiceId}}{{else}}/{{/if}}">Cancel</a>
+  </div>
+</form>
+
+<template id="item-row-template">
+  <tr class="item-row">
+    <td><input type="date" name="item_date" value=""></td>
+    <td>
+      <input type="text" name="item_description" value="" placeholder="Description of work">
+      <input type="text" name="item_detail" class="detail-input" value="" placeholder="Optional detail line">
+    </td>
+    <td><input type="number" name="item_hours" class="right" value="" min="0" step="0.25" placeholder="0"></td>
+    <td><input type="number" name="item_rate" class="right" value="" min="0" step="0.01"></td>
+    <td class="right nowrap amount-cell">$0.00</td>
+    <td class="right"><button type="button" class="btn btn-sm btn-quiet remove-row" title="Remove row">×</button></td>
+  </tr>
+</template>
+
+<script type="application/json" id="client-defaults">{{jsonScript clientOptions}}</script>

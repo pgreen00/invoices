@@ -1,0 +1,253 @@
+/* ---------- Print setup ---------- */
+@page {
+  size: letter portrait;
+  margin: 0.6in 0.65in;
+}
+
+@media print {
+  body { background: #fff; }
+  .sheet {
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    width: auto;
+    min-height: 0;
+  }
+  .no-print { display: none !important; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  .totals-block, .footer-note { page-break-inside: avoid; }
+}
+
+/* ---------- Base ---------- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #f1f2f4;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.45;
+  color: #1c1f23;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.sheet {
+  width: 8.5in;
+  min-height: 11in;
+  margin: 24px auto;
+  padding: 0.6in 0.65in;
+  background: #fff;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, .14);
+}
+
+/* ---------- Header ---------- */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+  padding-bottom: 18px;
+  border-bottom: 2px solid #1c1f23;
+}
+
+.biz-name {
+  font-size: 19pt;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin: 0 0 4px;
+}
+
+.biz-meta {
+  color: #555d66;
+  font-size: 9.5pt;
+  line-height: 1.55;
+}
+
+.invoice-title {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.invoice-title h2 {
+  margin: 0 0 8px;
+  font-size: 24pt;
+  font-weight: 300;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: #555d66;
+}
+
+.invoice-title .num {
+  font-size: 12pt;
+  font-weight: 600;
+}
+
+/* ---------- Meta strip ---------- */
+.meta {
+  display: flex;
+  gap: 36px;
+  margin: 22px 0 26px;
+}
+
+.meta-col { flex: 1; }
+.meta-col.narrow { flex: 0 0 auto; text-align: right; }
+
+.label {
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: #8a929b;
+  margin-bottom: 5px;
+}
+
+.meta strong { font-weight: 600; }
+
+.meta-rows td {
+  padding: 2px 0;
+  font-size: 10pt;
+  vertical-align: top;
+}
+
+.meta-rows td:first-child {
+  color: #555d66;
+  padding-right: 18px;
+  white-space: nowrap;
+}
+
+.meta-rows td:last-child {
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- Line items ---------- */
+table.items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 18px;
+}
+
+table.items thead th {
+  background: #1c1f23;
+  color: #fff;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 8px 10px;
+}
+
+table.items tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #e3e6e9;
+  vertical-align: top;
+}
+
+table.items tbody tr:nth-child(even) td { background: #fafbfc; }
+
+.num-col { text-align: right; white-space: nowrap; }
+.date-col { white-space: nowrap; width: 1%; }
+
+.desc-sub {
+  display: block;
+  color: #6b737c;
+  font-size: 9pt;
+  margin-top: 2px;
+}
+
+/* ---------- Totals ---------- */
+.totals-block {
+  display: flex;
+  justify-content: flex-end;
+}
+
+table.totals {
+  border-collapse: collapse;
+  min-width: 3.1in;
+}
+
+table.totals td {
+  padding: 6px 10px;
+  font-size: 10.5pt;
+}
+
+table.totals td:first-child { color: #555d66; }
+
+table.totals td:last-child {
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+table.totals tr.due td {
+  background: #1c1f23;
+  color: #fff;
+  font-size: 13pt;
+  font-weight: 700;
+}
+
+table.totals tr.due td:first-child { color: #fff; }
+
+/* ---------- Footer ---------- */
+.footer-note {
+  margin-top: 34px;
+  padding-top: 16px;
+  border-top: 1px solid #e3e6e9;
+  display: flex;
+  gap: 36px;
+}
+
+.footer-note > div { flex: 1; }
+
+.footer-note p {
+  margin: 0 0 4px;
+  font-size: 9.5pt;
+  color: #3c434b;
+}
+
+.thanks {
+  margin-top: 26px;
+  text-align: center;
+  font-size: 9.5pt;
+  color: #6b737c;
+}
+
+/* ---------- Screen-only toolbar ---------- */
+.toolbar {
+  width: 8.5in;
+  margin: 20px auto -8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-size: 9pt;
+  color: #6b737c;
+}
+
+.toolbar-left, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.toolbar a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.toolbar a:hover { text-decoration: underline; }
+
+.toolbar button {
+  font: inherit;
+  font-weight: 600;
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 5px;
+  background: #1c1f23;
+  color: #fff;
+  cursor: pointer;
+}

@@ -1,0 +1,63 @@
+<header class="page-head">
+  <h1>Invoices</h1>
+  {{#if stats.count}}
+    <p class="muted">
+      {{stats.count}} invoice{{#unless (eq stats.count 1)}}s{{/unless}} ·
+      {{hours stats.total_hours}} hours · {{money stats.total_cents}} billed
+    </p>
+  {{/if}}
+</header>
+
+{{#unless hasClients}}
+  <div class="callout">
+    You have no clients yet. <a href="/clients/new">Add one</a> before creating an invoice.
+  </div>
+{{/unless}}
+
+{{#if invoices.length}}
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>Number</th>
+        <th>Client</th>
+        <th>Service period</th>
+        <th class="right">Hours</th>
+        <th class="right">Total</th>
+        <th>Generated</th>
+        <th class="right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each invoices}}
+        <tr>
+          <td>
+            <a class="strong" href="/invoices/{{id}}">{{number}}</a>
+            <span class="sub">{{dateLong invoice_date}}</span>
+          </td>
+          <td>
+            {{client_name}}
+            {{#if project_name}}<span class="sub">{{project_name}}</span>{{/if}}
+          </td>
+          <td class="nowrap">{{dateRange period_start period_end}}</td>
+          <td class="right nowrap">{{hours total_hours}}</td>
+          <td class="right nowrap strong">{{money total_cents}}</td>
+          <td class="nowrap sub">{{timestamp generated_at}}</td>
+          <td class="right nowrap">
+            <a class="btn btn-sm" href="/invoices/{{id}}">Print</a>
+            <a class="btn btn-sm" href="/invoices/{{id}}/edit">Edit</a>
+            <a class="btn btn-sm" href="/invoices/new?copy_from={{id}}" title="Start next week's invoice from this one">Repeat</a>
+            <form class="inline" method="post" action="/invoices/{{id}}/delete"
+                  data-confirm="Delete invoice {{number}}? This cannot be undone.">
+              <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+{{else}}
+  <div class="empty">
+    <p>No invoices yet.</p>
+    <a class="btn btn-primary" href="/invoices/new">Create your first invoice</a>
+  </div>
+{{/if}}

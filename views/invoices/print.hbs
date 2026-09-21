@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Invoice {{invoice.number}}{{#if invoice.client_name}} — {{invoice.client_name}}{{/if}}</title>
+  <link rel="stylesheet" href="/assets/print.css">
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <div class="toolbar-left">
+    <a href="/">← All invoices</a>
+    <a href="/invoices/{{invoice.id}}/edit">Edit</a>
+  </div>
+  <div class="toolbar-right">
+    <span>Turn off &ldquo;Headers and footers&rdquo; in Chrome&rsquo;s print dialog.</span>
+    <button onclick="window.print()">Print / Save as PDF</button>
+  </div>
+</div>
+
+<div class="sheet">
+
+  <header>
+    <div>
+      <h1 class="biz-name">{{invoice.business_name}}</h1>
+      <div class="biz-meta">
+        {{#if invoice.business_tagline}}{{invoice.business_tagline}}<br>{{/if}}
+        {{#if invoice.business_address_line1}}{{invoice.business_address_line1}}<br>{{/if}}
+        {{#if invoice.business_address_line2}}{{invoice.business_address_line2}}<br>{{/if}}
+        {{#if invoice.business_city_state_zip}}{{invoice.business_city_state_zip}}<br>{{/if}}
+        {{#if invoice.business_email}}{{invoice.business_email}}{{/if}}
+        {{#if invoice.business_phone}} &nbsp;&middot;&nbsp; {{invoice.business_phone}}{{/if}}
+        {{#if invoice.business_tax_id}}<br>{{invoice.business_tax_id}}{{/if}}
+      </div>
+    </div>
+    <div class="invoice-title">
+      <h2>Invoice</h2>
+      <div class="num">No. {{invoice.number}}</div>
+    </div>
+  </header>
+
+  <section class="meta">
+    <div class="meta-col">
+      <div class="label">Bill To</div>
+      <strong>{{invoice.client_name}}</strong><br>
+      {{#if invoice.client_attn}}Attn: {{invoice.client_attn}}<br>{{/if}}
+      {{#if invoice.client_address_line1}}{{invoice.client_address_line1}}<br>{{/if}}
+      {{#if invoice.client_address_line2}}{{invoice.client_address_line2}}<br>{{/if}}
+      {{#if invoice.client_city_state_zip}}{{invoice.client_city_state_zip}}<br>{{/if}}
+      {{invoice.client_email}}
+    </div>
+
+    {{#if (or invoice.project_name invoice.contract_ref invoice.po_number)}}
+      <div class="meta-col">
+        <div class="label">Project</div>
+        {{#if invoice.project_name}}<strong>{{invoice.project_name}}</strong><br>{{/if}}
+        {{#if invoice.contract_ref}}Contract: {{invoice.contract_ref}}<br>{{/if}}
+        {{#if invoice.po_number}}PO #: {{invoice.po_number}}{{/if}}
+      </div>
+    {{/if}}
+
+    <div class="meta-col narrow">
+      <div class="label">Invoice Details</div>
+      <table class="meta-rows">
+        <tr><td>Invoice Date</td><td>{{dateLong invoice.invoice_date}}</td></tr>
+        {{#if invoice.period_start}}
+          <tr><td>Service Period</td><td>{{dateRange invoice.period_start invoice.period_end}}</td></tr>
+        {{/if}}
+        <tr><td>Terms</td><td>Net {{invoice.terms_days}}</td></tr>
+        {{#if invoice.due_date}}
+          <tr><td>Due Date</td><td>{{dateLong invoice.due_date}}</td></tr>
+        {{/if}}
+      </table>
+    </div>
+  </section>
+
+  <table class="items">
+    <thead>
+      <tr>
+        <th class="date-col">Date</th>
+        <th>Description</th>
+        <th class="num-col">Hours</th>
+        <th class="num-col">Rate</th>
+        <th class="num-col">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each items}}
+        <tr>
+          <td class="date-col">{{dateDay work_date}}</td>
+          <td>
+            {{description}}
+            {{#if detail}}<span class="desc-sub">{{detail}}</span>{{/if}}
+          </td>
+          <td class="num-col">{{hours hours}}</td>
+          <td class="num-col">{{money rate_cents}}</td>
+          <td class="num-col">{{money amount_cents}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <div class="totals-block">
+    <table class="totals">
+      <tr><td>Billable hours</td><td>{{hours totals.hours}}</td></tr>
+      <tr><td>Subtotal</td><td>{{money totals.subtotal_cents}}</td></tr>
+      {{#if totals.expenses_cents}}
+        <tr><td>Reimbursable expenses</td><td>{{money totals.expenses_cents}}</td></tr>
+      {{/if}}
+      {{#if totals.discount_cents}}
+        <tr><td>Discount</td><td>&ndash;{{money totals.discount_cents}}</td></tr>
+      {{/if}}
+      <tr class="due"><td>Amount Due (USD)</td><td>{{money totals.total_cents}}</td></tr>
+    </table>
+  </div>
+
+  {{#if (or invoice.payment_instructions invoice.notes)}}
+    <div class="footer-note">
+      {{#if invoice.payment_instructions}}
+        <div>
+          <div class="label">Payment Instructions</div>
+          {{#each (lines invoice.payment_instructions)}}<p>{{this}}</p>{{/each}}
+          <p>Reference: Invoice {{../invoice.number}}</p>
+        </div>
+      {{/if}}
+      {{#if invoice.notes}}
+        <div>
+          <div class="label">Notes &amp; Terms</div>
+          {{#each (lines invoice.notes)}}<p>{{this}}</p>{{/each}}
+        </div>
+      {{/if}}
+    </div>
+  {{/if}}
+
+  {{#if invoice.footer_message}}
+    <div class="thanks">{{invoice.footer_message}}</div>
+  {{/if}}
+
+</div>
+
+</body>
+</html>

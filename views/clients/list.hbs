@@ -1,0 +1,47 @@
+<header class="page-head">
+  <h1>Clients</h1>
+  <a class="btn btn-primary" href="/clients/new">New client</a>
+</header>
+
+{{#if clients.length}}
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Default project</th>
+        <th class="right">Rate</th>
+        <th class="right">Terms</th>
+        <th class="right">Invoices</th>
+        <th class="right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each clients}}
+        <tr class="{{#if archived}}dim{{/if}}">
+          <td>
+            <span class="strong">{{name}}</span>
+            {{#if archived}}<span class="tag">archived</span>{{/if}}
+            {{#if attn}}<span class="sub">Attn: {{attn}}</span>{{/if}}
+          </td>
+          <td>{{default_project}}</td>
+          <td class="right nowrap">{{#if default_rate_cents}}{{money default_rate_cents}}{{else}}—{{/if}}</td>
+          <td class="right nowrap">{{#if default_terms_days}}Net {{default_terms_days}}{{else}}—{{/if}}</td>
+          <td class="right">{{invoice_count}}</td>
+          <td class="right nowrap">
+            <a class="btn btn-sm" href="/invoices/new?client_id={{id}}">Invoice</a>
+            <a class="btn btn-sm" href="/clients/{{id}}/edit">Edit</a>
+            <form class="inline" method="post" action="/clients/{{id}}/delete"
+                  data-confirm="Delete {{name}}? Existing invoices keep their saved billing details.">
+              <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+{{else}}
+  <div class="empty">
+    <p>No clients yet.</p>
+    <a class="btn btn-primary" href="/clients/new">Add a client</a>
+  </div>
+{{/if}}
