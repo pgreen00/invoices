@@ -49,9 +49,17 @@ function template(name) {
  * Renders `name` into `layout` and assigns it to the response.
  * Pass `{ layout: false }` for standalone pages such as the print view.
  */
+const APP_NAME = 'Invoices';
+
 export function render(ctx, name, data = {}, options = {}) {
   const layout = options.layout === undefined ? 'layout' : options.layout;
-  const context = { ...data, path: ctx.path };
+  const title = data.title ?? APP_NAME;
+  const context = {
+    ...data,
+    path: ctx.path,
+    // Avoids a redundant "Invoices — Invoices" on the index page.
+    documentTitle: title === APP_NAME ? APP_NAME : `${title} — ${APP_NAME}`,
+  };
   const body = template(name)(context);
 
   ctx.type = 'html';

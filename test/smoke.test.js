@@ -152,6 +152,14 @@ describe('pages render', () => {
     assert.equal((await get('/app.css')).status, 404);
   });
 
+  it('titles pages without repeating the app name', async () => {
+    assert.match(await (await get('/')).text(), /<title>Invoices<\/title>/);
+    assert.match(
+      await (await get('/invoices/new')).text(),
+      /<title>New invoice — Invoices<\/title>/
+    );
+  });
+
   it('links the icons and manifest from the layout', async () => {
     const html = await (await get('/')).text();
     assert.match(html, /<link rel="icon" href="\/icon\.svg"/);
