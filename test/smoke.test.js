@@ -348,12 +348,41 @@ describe('print stylesheet', () => {
     assert.ok(printAt > css.indexOf('.sheet {'), 'print block must come after .sheet');
   });
 
+  it('pins invoices to light regardless of the system setting', () => {
+    // The app follows the system scheme, but an invoice is a printed
+    // document and must never render dark.
+    assert.match(css, /color-scheme:\s*light;/);
+    assert.doesNotMatch(css, /color-scheme:\s*light dark/);
+    assert.doesNotMatch(css, /light-dark\(/);
+  });
+
   it('strips the screen-only chrome when printing', () => {
     const printBlock = css.slice(css.indexOf('@media print'));
     assert.match(printBlock, /box-shadow:\s*none/);
     assert.match(printBlock, /margin:\s*0;/);
     assert.match(printBlock, /padding:\s*0;/);
     assert.match(printBlock, /display:\s*none\s*!important/);
+  });
+});
+
+describe('app stylesheet', () => {
+  const css = fs.readFileSync(new URL('../public/app.css', import.meta.url), 'utf8');
+
+  it('opts into the system colour scheme', () => {
+    assert.match(css, /color-scheme:\s*light dark;/);
+  });
+
+  it('has no bare light-mode colours left outside light-dark()', () => {
+    const offenders = css
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('\n')
+      .map((line, index) => [index + 1, line])
+      .filter(([, line]) => /#[0-9a-fA-F]{3,8}|rgba?\(/.test(line) && !line.includes('light-dark('))
+      // The nav bar is dark in both schemes, so its white text is correct
+      // in both and must not be wrapped.
+      .filter(([, line]) => !/#fff|#aeb6bf/.test(line));
+
+    assert.deepEqual(offenders, [], `unwrapped colours:\n${offenders.map(([n, l]) => `  ${n}: ${l.trim()}`).join('\n')}`);
   });
 });
 

@@ -1,10 +1,13 @@
 :root {
-  --ink: #1c1f23;
-  --muted: #6b737c;
-  --line: #e3e6e9;
-  --bg: #f6f7f9;
-  --accent: #2563eb;
-  --danger: #b42318;
+  /* Follow the system setting. This is what makes light-dark() resolve. */
+  color-scheme: light dark;
+
+  --ink: light-dark(#1c1f23, #e6e9ec);
+  --muted: light-dark(#6b737c, #99a2ac);
+  --line: light-dark(#e3e6e9, #2f353b);
+  --bg: light-dark(#f6f7f9, #16181b);
+  --accent: light-dark(#2563eb, #7aa2ff);
+  --danger: light-dark(#b42318, #ff8a7d);
   --radius: 8px;
 }
 
@@ -26,7 +29,10 @@ a { color: var(--accent); }
   gap: 24px;
   padding: 0 24px;
   height: 56px;
-  background: var(--ink);
+  /* Not var(--ink): the nav is dark in both schemes, so it needs its own
+     pair rather than the text colour, which inverts. Same for .btn-primary.
+     White nav text is then correct in both. */
+  background: light-dark(#1c1f23, #0e1013);
   color: #fff;
 }
 
@@ -78,7 +84,7 @@ a { color: var(--accent); }
 .page-head .btn, .page-head a.btn { margin-left: auto; }
 
 .card {
-  background: #fff;
+  background: light-dark(#ffffff, #1e2227);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 20px 22px;
@@ -119,7 +125,7 @@ a { color: var(--accent); }
 .field > span {
   font-size: 12px;
   font-weight: 600;
-  color: #3c434b;
+  color: light-dark(#3c434b, #c2c9d1);
 }
 
 .field small { color: var(--muted); font-size: 11.5px; }
@@ -143,14 +149,14 @@ textarea {
   font: inherit;
   color: inherit;
   padding: 7px 9px;
-  border: 1px solid #cdd2d8;
+  border: 1px solid light-dark(#cdd2d8, #3a4149);
   border-radius: 6px;
-  background: #fff;
+  background: light-dark(#ffffff, #14171a);
   width: 100%;
 }
 
 input:focus, select:focus, textarea:focus {
-  outline: 2px solid rgba(37, 99, 235, .35);
+  outline: 2px solid light-dark(rgba(37, 99, 235, .35), rgba(122, 162, 255, .4));
   outline-offset: -1px;
   border-color: var(--accent);
 }
@@ -160,9 +166,9 @@ input.right { text-align: right; }
 
 .readout {
   padding: 7px 9px;
-  border: 1px dashed #cdd2d8;
+  border: 1px dashed light-dark(#cdd2d8, #3a4149);
   border-radius: 6px;
-  background: #fafbfc;
+  background: light-dark(#fafbfc, #14171a);
   color: var(--muted);
 }
 
@@ -180,28 +186,28 @@ input.right { text-align: right; }
   font-size: 13px;
   font-weight: 500;
   padding: 7px 14px;
-  border: 1px solid #cdd2d8;
+  border: 1px solid light-dark(#cdd2d8, #3a4149);
   border-radius: 6px;
-  background: #fff;
+  background: light-dark(#ffffff, #262b31);
   color: var(--ink);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.btn:hover { background: #f2f4f6; }
+.btn:hover { background: light-dark(#f2f4f6, #2f353c); }
 
 .btn-primary {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+  background: light-dark(#1c1f23, #e6e9ec);
+  border-color: light-dark(#1c1f23, #e6e9ec);
+  color: light-dark(#ffffff, #16181b);
 }
 
-.btn-primary:hover { background: #33383e; }
+.btn-primary:hover { background: light-dark(#33383e, #ffffff); }
 
 .btn-sm { padding: 4px 9px; font-size: 12px; }
-.btn-danger { color: var(--danger); border-color: #e8c4c0; }
-.btn-danger:hover { background: #fdf3f2; }
+.btn-danger { color: var(--danger); border-color: light-dark(#e8c4c0, #5c3330); }
+.btn-danger:hover { background: light-dark(#fdf3f2, #2e1d1b); }
 
 .btn-quiet {
   border-color: transparent;
@@ -211,7 +217,7 @@ input.right { text-align: right; }
   padding: 4px 8px;
 }
 
-.btn-quiet:hover { color: var(--danger); background: #fdf3f2; }
+.btn-quiet:hover { color: var(--danger); background: light-dark(#fdf3f2, #2e1d1b); }
 
 .inline { display: inline; }
 
@@ -219,7 +225,7 @@ input.right { text-align: right; }
 .grid {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
+  background: light-dark(#ffffff, #1e2227);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
@@ -232,7 +238,7 @@ input.right { text-align: right; }
   letter-spacing: 0.7px;
   color: var(--muted);
   padding: 10px 12px;
-  background: #fafbfc;
+  background: light-dark(#fafbfc, #22262b);
   border-bottom: 1px solid var(--line);
 }
 
@@ -243,7 +249,7 @@ input.right { text-align: right; }
 }
 
 .grid tbody tr:last-child td { border-bottom: 0; }
-.grid tbody tr:hover td { background: #fafbfc; }
+.grid tbody tr:hover td { background: light-dark(#fafbfc, #23282e); }
 
 .right { text-align: right; }
 .nowrap { white-space: nowrap; }
@@ -262,7 +268,7 @@ input.right { text-align: right; }
   font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: .6px;
-  background: #eceff2;
+  background: light-dark(#eceff2, #2c3238);
   color: var(--muted);
   border-radius: 3px;
   padding: 1px 5px;
@@ -325,21 +331,30 @@ input.right { text-align: right; }
 
 /* ---------- Callouts ---------- */
 .callout {
-  background: #fff8e6;
-  border: 1px solid #f0dca6;
+  background: light-dark(#fff8e6, #2a2413);
+  border: 1px solid light-dark(#f0dca6, #574a23);
   border-radius: var(--radius);
   padding: 12px 16px;
   margin-bottom: 18px;
   font-size: 13px;
 }
 
-.callout-error { background: #fdf3f2; border-color: #e8c4c0; color: #7a2018; }
-.callout-ok { background: #f0f9f2; border-color: #b9e0c3; color: #1c5c31; }
+.callout-error {
+  background: light-dark(#fdf3f2, #2e1a18);
+  border-color: light-dark(#e8c4c0, #5e3733);
+  color: light-dark(#7a2018, #ffb4aa);
+}
+
+.callout-ok {
+  background: light-dark(#f0f9f2, #14261a);
+  border-color: light-dark(#b9e0c3, #2f5c3c);
+  color: light-dark(#1c5c31, #8fdca6);
+}
 .callout ul { margin: 6px 0 0; padding-left: 20px; }
 
 .empty {
-  background: #fff;
-  border: 1px dashed #cdd2d8;
+  background: light-dark(#ffffff, #1e2227);
+  border: 1px dashed light-dark(#cdd2d8, #3a4149);
   border-radius: var(--radius);
   padding: 48px 24px;
   text-align: center;

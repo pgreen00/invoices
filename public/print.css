@@ -1,10 +1,14 @@
 /* ---------- Print setup ---------- */
 @page {
   size: letter portrait;
-  margin: 0.6in 0.65in;
+  margin: 0.5in 0.6in;
 }
 
 /* ---------- Base ---------- */
+/* Invoices are printed documents and stay light regardless of the system
+   setting, so the app's dark mode cannot bleed into them. */
+html { color-scheme: light; }
+
 * { box-sizing: border-box; }
 
 body {
@@ -33,7 +37,7 @@ header {
   justify-content: space-between;
   align-items: flex-start;
   gap: 32px;
-  padding-bottom: 18px;
+  padding-bottom: 14px;
   border-bottom: 2px solid #1c1f23;
 }
 
@@ -73,7 +77,7 @@ header {
 .meta {
   display: flex;
   gap: 36px;
-  margin: 22px 0 26px;
+  margin: 16px 0 20px;
 }
 
 .meta-col { flex: 1; }
@@ -112,7 +116,7 @@ header {
 table.items {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 table.items thead th {
@@ -179,8 +183,8 @@ table.totals tr.due td:first-child { color: #fff; }
 
 /* ---------- Footer ---------- */
 .footer-note {
-  margin-top: 34px;
-  padding-top: 16px;
+  margin-top: 22px;
+  padding-top: 14px;
   border-top: 1px solid #e3e6e9;
   display: flex;
   gap: 36px;
@@ -195,7 +199,7 @@ table.totals tr.due td:first-child { color: #fff; }
 }
 
 .thanks {
-  margin-top: 26px;
+  margin-top: 14px;
   text-align: center;
   font-size: 9.5pt;
   color: #6b737c;
