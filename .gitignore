@@ -1,4 +1,5 @@
-node_modules/
+build/bin/
+build/wailsjs/
 .env
 *.db
 *.db-journal

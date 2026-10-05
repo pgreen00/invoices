@@ -1,37 +1,47 @@
 # Invoices
 
-A small self-hosted invoice generator for hourly, weekly billing. Koa +
-Handlebars + `node:sqlite`, three dependencies, no build step. Invoices are
-laid out for Letter paper and printed straight from Chrome.
+A small desktop invoice generator for hourly, weekly billing. Go + Gin +
+`html/template` + SQLite, packaged as a native app with
+[Wails](https://wails.io). It is completely offline: there is no server
+process, nothing listens on a port, and the data never leaves your machine.
+Invoices are laid out for Letter paper and printed (or saved as PDF) straight
+from the app.
 
 ## Requirements
 
-Node 22.5+ (this uses the built-in `node:sqlite` module). Verified on Node 26.
+- Go 1.25+
+- The Wails CLI, to build the app bundle:
+  `go install github.com/wailsapp/wails/v2/cmd/wails@v2.16.0`
+- macOS: Xcode command line tools. (Wails also targets Windows and Linux; see
+  its [installation guide](https://wails.io/docs/gettingstarted/installation)
+  for their dependencies.)
 
-## Setup
+## Build and run
 
 ```sh
-npm install
-cp .env.example .env    # then set DATABASE_URL
-npm start               # http://127.0.0.1:3000
+wails build -skipbindings     # → build/bin/Invoices.app
+open build/bin/Invoices.app
 ```
 
-`DATABASE_URL` is **required** and has no default. It points at a SQLite file
-and accepts a plain path, a `~`-prefixed path, or a `file:` URL:
+`wails dev -skipbindings` runs it in development mode, rebuilding when Go files
+change. There are no frontend bindings, hence `-skipbindings`.
 
-```
-DATABASE_URL=/Users/you/Somewhere/invoices.db
-DATABASE_URL=file:///Users/you/Somewhere/invoices.db
-DATABASE_URL=~/Somewhere/invoices.db
-```
+## Where your data lives
 
-The parent directory must already exist — the app will not create it, so a
-typo fails loudly instead of quietly starting a second, empty database. The
-file itself is created and migrated on first run, seeded with example
-settings and one example client for you to replace.
+The database is a single SQLite file in the app's data directory, created and
+migrated on first launch and seeded with example settings and one example
+client for you to replace:
 
-`PORT` (3000) and `HOST` (127.0.0.1) are optional. There is no authentication;
-keep it bound to loopback.
+| OS      | Path                                                  |
+| ------- | ----------------------------------------------------- |
+| macOS   | `~/Library/Application Support/Invoices/invoices.db`  |
+| Windows | `%AppData%\Invoices\invoices.db`                      |
+| Linux   | `$XDG_DATA_HOME/Invoices/invoices.db` (default `~/.local/share`) |
+
+On macOS, **File → Show Database in Finder** reveals it. To back it up, copy
+the file while the app is closed. To bring over a database from the old Node
+version, quit the app and copy your file over `invoices.db`; the schema is
+unchanged.
 
 ## Using it
 
@@ -48,8 +58,28 @@ The list view has a **Repeat** action that opens a new invoice rolled forward
 one week from an existing one, carrying the client, project, descriptions, and
 rates but clearing the hours. That is the fastest path for a weekly cadence.
 
-Clicking an invoice opens the print view. In Chrome's print dialog, turn off
-**Headers and footers**; margins are already set by the stylesheet.
+Clicking an invoice opens the print view. **Print / Save as PDF** (or ⌘P)
+opens the system print panel on US Letter; margins come from the stylesheet,
+and no browser headers or footers are added.
+
+## How it works
+
+The UI is a classic server-rendered multi-page app. Wails opens a native
+window whose webview loads `wails://wails/` (macOS/Linux) or
+`http://wails.localhost/` (Windows). Those requests never touch the network:
+Wails hands each one to the Gin engine in-process as an ordinary
+`http.Request`, and Gin's response goes straight back to the webview.
+
+Two browser behaviours need help inside a webview, and `internal/desktop`
+provides them:
+
+- **Redirects.** WebKit does not follow 3xx responses from a custom URL
+  scheme, and every form here posts then redirects. `FollowRedirects` turns a
+  redirect into a tiny page that calls `location.replace`, so the POST still
+  stays out of history.
+- **`confirm()` and `print()` on macOS.** WKWebView ignores both unless the app
+  implements them. `InstallWebViewHooks` adds a native confirm sheet (for the
+  Delete buttons) and the system print panel to Wails' webview delegate.
 
 ## Design notes
 
@@ -66,14 +96,19 @@ would expect.
 
 **`generated_at` is immutable**; edits only bump `updated_at`.
 
-**Dates are plain `YYYY-MM-DD` strings** parsed as local calendar dates.
-`new Date('2024-03-18')` would parse as UTC and shift a day in western
-timezones, so it is avoided in both the server and browser code.
+**Dates are plain `YYYY-MM-DD` strings** treated as calendar dates, never
+instants, so no timezone can shift them by a day — on the server or in the
+browser JavaScript.
 
 **`journal_mode = DELETE`** rather than WAL. The database stays a single
 self-contained file at rest, with no `-wal`/`-shm` sidecars that a
 folder-syncing service or a naive file copy could capture out of step with each
-other. Assumes one writer at a time, which suits a single-user local app.
+other. The app holds a single-instance lock and a single connection, so there
+is only ever one writer.
+
+**Form parsing matches the original JavaScript.** `internal/jscompat`
+reproduces `Number()`, `parseInt()`, `Math.round()` and `trim()` semantics, so
+input is parsed and rounded exactly as it was in the Node version.
 
 **The browser JavaScript is progressive enhancement only.** Live totals, the
 due-date readout, and the add-row button are conveniences; the server
@@ -82,44 +117,36 @@ recomputes and revalidates everything on save.
 ## Icons
 
 The favicon is a clipboard drawn as a handful of rounded rectangles in
-`public/icon.svg`, so it stays crisp at any size. `public/icon-square.svg` is
-the same artwork on a full-bleed background, used for the Apple touch icon
-because iOS applies its own rounded mask.
-
-The PNGs and `favicon.ico` were rasterized from those two SVGs and checked in,
-so there is nothing to build. If you ever change the artwork, they were made
-with macOS's `qlmanage -t -s 512 -o . icon.svg` and `sips -z 192 192`.
-
-`manifest.webmanifest` gives the bookmark a name, a theme colour, and a
-`standalone` display mode, so Chrome's "Install page as app" produces a
-window without browser chrome if you want one.
+`public/icon.svg`. `build/appicon.svg` places the same artwork on the macOS
+icon grid; `build/appicon.png` was rasterized from it with
+`sips -s format png appicon.svg --out appicon.png`, and Wails generates the
+platform icons from that PNG at build time.
 
 ## Tests
 
 ```sh
-npm test
+go test ./...
 ```
 
-31 tests covering money and date helpers, page rendering, the full invoice
-lifecycle (create, validate, edit, repeat, delete, cascade), auto-numbering,
-the snapshot guarantee, and that every icon the manifest declares actually
-resolves. Uses the built-in Node test runner against a throwaway database in a
-temp directory — no fixtures to clean up.
+Covers money and date helpers, page rendering, the full invoice lifecycle
+(create, validate, edit, repeat, delete, cascade), auto-numbering, the snapshot
+guarantee, client archiving, the stylesheet invariants, and the webview
+redirect adapter. Runs against a throwaway database in a temp directory.
 
 ## Layout
 
 ```
-src/
-  server.js       boot: open db, listen
-  app.js          Koa app assembly
-  db.js           DATABASE_URL resolution, pragmas, migration, seed
-  schema.sql      tables
-  repo.js         all SQL
-  invoiceForm.js  form parsing and validation
-  money.js        integer-cent arithmetic
-  dates.js        local-date helpers
-  middleware.js   form body parser, static files, error page
-  render.js       Handlebars setup and helpers
-views/            .hbs templates (layout, invoices, clients, settings)
-public/           app.css, print.css, app.js, icons, manifest
+main.go               Wails app: data directory, window, menu
+wails.json            Wails project config
+build/                app icon and macOS Info.plist
+internal/
+  store/              SQLite: open, pragmas, schema.sql, seed, all SQL
+  forms/              form parsing and validation
+  money/              integer-cent arithmetic
+  dates/              calendar-date helpers
+  jscompat/           JavaScript number/string semantics
+  web/                Gin engine, routes, rendering, error page
+  desktop/            data directory, redirect adapter, macOS webview hooks
+views/                html/template pages (layout, invoices, clients, settings)
+public/               app.css, print.css, app.js, icons
 ```

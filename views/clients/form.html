@@ -1,0 +1,81 @@
+{{define "content"}}
+<header class="page-head">
+  <h1>{{.Title}}</h1>
+</header>
+
+{{if .Errors}}
+  <div class="callout callout-error">
+    <strong>Please fix the following:</strong>
+    <ul>{{range .Errors}}<li>{{.}}</li>{{end}}</ul>
+  </div>
+{{end}}
+
+<form method="post" action="{{.Action}}" autocomplete="off">
+  <section class="card">
+    <h2>Billing address</h2>
+    <div class="field-grid">
+      <label class="field span-2">
+        <span>Client name</span>
+        <input type="text" name="name" value="{{.Client.Name}}" required placeholder="Northwind Retail Group, Inc.">
+      </label>
+      <label class="field">
+        <span>Attention</span>
+        <input type="text" name="attn" value="{{.Client.Attn}}" placeholder="Dana Whitfield, VP Engineering">
+      </label>
+      <label class="field">
+        <span>Address line 1</span>
+        <input type="text" name="address_line1" value="{{.Client.AddressLine1}}" placeholder="98 Harbor Point Drive">
+      </label>
+      <label class="field">
+        <span>Address line 2</span>
+        <input type="text" name="address_line2" value="{{.Client.AddressLine2}}" placeholder="Floor 12">
+      </label>
+      <label class="field">
+        <span>City, state, ZIP</span>
+        <input type="text" name="city_state_zip" value="{{.Client.CityStateZip}}" placeholder="Seattle, WA 98104">
+      </label>
+      <label class="field">
+        <span>Billing email</span>
+        <input type="email" name="email" value="{{.Client.Email}}" placeholder="ap@northwindretail.com">
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Invoice defaults</h2>
+    <p class="muted">Used to prefill new invoices for this client. Blank falls back to Settings.</p>
+    <div class="field-grid">
+      <label class="field">
+        <span>Default project</span>
+        <input type="text" name="default_project" value="{{.Client.DefaultProject}}"
+               placeholder="Order Management Platform — Phase 2">
+      </label>
+      <label class="field">
+        <span>Contract reference</span>
+        <input type="text" name="default_contract" value="{{.Client.DefaultContract}}" placeholder="MSA dated 2024-01-15">
+      </label>
+      <label class="field">
+        <span>PO number</span>
+        <input type="text" name="default_po" value="{{.Client.DefaultPO}}" placeholder="NW-PO-4471">
+      </label>
+      <label class="field">
+        <span>Hourly rate</span>
+        <input type="number" name="default_rate" value="{{.Client.DefaultRate}}" min="0" step="0.01" placeholder="165.00">
+      </label>
+      <label class="field">
+        <span>Terms (days)</span>
+        <input type="number" name="default_terms_days" value="{{.Client.DefaultTermsDays}}" min="0" step="1" placeholder="15">
+      </label>
+      <label class="field checkbox">
+        <input type="checkbox" name="archived" value="1" {{if .Client.Archived}}checked{{end}}>
+        <span>Archived (hidden from the invoice form)</span>
+      </label>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Save client</button>
+    <a class="btn" href="/clients">Cancel</a>
+  </div>
+</form>
+{{end}}

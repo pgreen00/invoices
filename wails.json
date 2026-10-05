@@ -1,0 +1,14 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Invoices",
+  "outputfilename": "Invoices",
+  "frontend:dir": "public",
+  "frontend:install": "",
+  "frontend:build": "",
+  "wailsjsdir": "./build/wailsjs",
+  "info": {
+    "productName": "Invoices",
+    "productVersion": "1.0.0",
+    "comments": "Generate and print hourly invoices."
+  }
+}

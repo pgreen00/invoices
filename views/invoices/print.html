@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Invoice {{.Invoice.Number}}{{if .Invoice.ClientName}} — {{.Invoice.ClientName}}{{end}}</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="stylesheet" href="/assets/print.css">
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <div class="toolbar-left">
+    <a href="/">← All invoices</a>
+    <a href="/invoices/{{.Invoice.ID}}/edit">Edit</a>
+  </div>
+  <div class="toolbar-right">
+    <span>Turn off &ldquo;Headers and footers&rdquo; in Chrome&rsquo;s print dialog.</span>
+    <button onclick="window.print()">Print / Save as PDF</button>
+  </div>
+</div>
+
+<div class="sheet">
+
+  <header>
+    <div>
+      <h1 class="biz-name">{{.Invoice.BusinessName}}</h1>
+      <div class="biz-meta">
+        {{if .Invoice.BusinessTagline}}<div>{{.Invoice.BusinessTagline}}</div>{{end}}
+        {{if .Invoice.BusinessAddressLine1}}<div>{{.Invoice.BusinessAddressLine1}}</div>{{end}}
+        {{if .Invoice.BusinessAddressLine2}}<div>{{.Invoice.BusinessAddressLine2}}</div>{{end}}
+        {{if .Invoice.BusinessCityStateZip}}<div>{{.Invoice.BusinessCityStateZip}}</div>{{end}}
+        {{if .Invoice.BusinessPhone}}<div>{{.Invoice.BusinessPhone}}</div>{{end}}
+        {{if .Invoice.BusinessEmail}}<div>{{.Invoice.BusinessEmail}}</div>{{end}}
+        {{if .Invoice.BusinessTaxID}}<div>{{.Invoice.BusinessTaxID}}</div>{{end}}
+      </div>
+    </div>
+    <div class="invoice-title">
+      <h2>Invoice</h2>
+      <div class="num">No. {{.Invoice.Number}}</div>
+    </div>
+  </header>
+
+  <section class="meta">
+    <div class="meta-col">
+      <div class="label">Bill To</div>
+      <strong>{{.Invoice.ClientName}}</strong><br>
+      {{if .Invoice.ClientAttn}}Attn: {{.Invoice.ClientAttn}}<br>{{end}}
+      {{if .Invoice.ClientAddressLine1}}{{.Invoice.ClientAddressLine1}}<br>{{end}}
+      {{if .Invoice.ClientAddressLine2}}{{.Invoice.ClientAddressLine2}}<br>{{end}}
+      {{if .Invoice.ClientCityStateZip}}{{.Invoice.ClientCityStateZip}}<br>{{end}}
+      {{.Invoice.ClientEmail}}
+    </div>
+
+    {{if or .Invoice.ProjectName .Invoice.ContractRef .Invoice.PONumber}}
+      <div class="meta-col">
+        <div class="label">Project</div>
+        {{if .Invoice.ProjectName}}<strong>{{.Invoice.ProjectName}}</strong><br>{{end}}
+        {{if .Invoice.ContractRef}}Contract: {{.Invoice.ContractRef}}<br>{{end}}
+        {{if .Invoice.PONumber}}PO #: {{.Invoice.PONumber}}{{end}}
+      </div>
+    {{end}}
+
+    <div class="meta-col narrow">
+      <div class="label">Invoice Details</div>
+      <table class="meta-rows">
+        <tr><td>Invoice Date</td><td>{{dateLong .Invoice.InvoiceDate}}</td></tr>
+        {{if .Invoice.PeriodStart}}
+          <tr><td>Service Period</td><td>{{dateRange .Invoice.PeriodStart .Invoice.PeriodEnd}}</td></tr>
+        {{end}}
+        <tr><td>Terms</td><td>Net {{.Invoice.TermsDays}}</td></tr>
+        {{if .Invoice.DueDate}}
+          <tr><td>Due Date</td><td>{{dateLong .Invoice.DueDate}}</td></tr>
+        {{end}}
+      </table>
+    </div>
+  </section>
+
+  <table class="items">
+    <thead>
+      <tr>
+        <th class="date-col">Date</th>
+        <th>Description</th>
+        <th class="num-col">Hours</th>
+        <th class="num-col">Rate</th>
+        <th class="num-col">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Items}}
+        <tr>
+          <td class="date-col">{{dateDay .WorkDate}}</td>
+          <td>
+            {{.Description}}
+            {{if .Detail}}<span class="desc-sub">{{.Detail}}</span>{{end}}
+          </td>
+          <td class="num-col">{{hours .Hours}}</td>
+          <td class="num-col">{{money .RateCents}}</td>
+          <td class="num-col">{{money .AmountCents}}</td>
+        </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+  <div class="totals-block">
+    <table class="totals">
+      <tr><td>Billable hours</td><td>{{hours .Totals.Hours}}</td></tr>
+      <tr><td>Subtotal</td><td>{{money .Totals.SubtotalCents}}</td></tr>
+      {{if .Totals.ExpensesCents}}
+        <tr><td>Reimbursable expenses</td><td>{{money .Totals.ExpensesCents}}</td></tr>
+      {{end}}
+      {{if .Totals.DiscountCents}}
+        <tr><td>Discount</td><td>&ndash;{{money .Totals.DiscountCents}}</td></tr>
+      {{end}}
+      <tr class="due"><td>Amount Due (USD)</td><td>{{money .Totals.TotalCents}}</td></tr>
+    </table>
+  </div>
+
+  {{if or .Invoice.PaymentInstructions .Invoice.Notes}}
+    <div class="footer-note">
+      {{if .Invoice.PaymentInstructions}}
+        <div>
+          <div class="label">Payment Instructions</div>
+          {{range lines .Invoice.PaymentInstructions}}<p>{{.}}</p>{{end}}
+          <p>Reference: Invoice {{.Invoice.Number}}</p>
+        </div>
+      {{end}}
+      {{if .Invoice.Notes}}
+        <div>
+          <div class="label">Notes &amp; Terms</div>
+          {{range lines .Invoice.Notes}}<p>{{.}}</p>{{end}}
+        </div>
+      {{end}}
+    </div>
+  {{end}}
+
+  {{if .Invoice.FooterMessage}}
+    <div class="thanks">{{.Invoice.FooterMessage}}</div>
+  {{end}}
+
+</div>
+
+</body>
+</html>

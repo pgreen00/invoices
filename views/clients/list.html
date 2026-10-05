@@ -1,0 +1,49 @@
+{{define "content"}}
+<header class="page-head">
+  <h1>Clients</h1>
+  <a class="btn btn-primary" href="/clients/new">New client</a>
+</header>
+
+{{if .Clients}}
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Default project</th>
+        <th class="right">Rate</th>
+        <th class="right">Terms</th>
+        <th class="right">Invoices</th>
+        <th class="right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Clients}}
+        <tr class="{{if .Archived}}dim{{end}}">
+          <td>
+            <span class="strong">{{.Name}}</span>
+            {{if .Archived}}<span class="tag">archived</span>{{end}}
+            {{if .Attn}}<span class="sub">Attn: {{.Attn}}</span>{{end}}
+          </td>
+          <td>{{.DefaultProject}}</td>
+          <td class="right nowrap">{{if .RateCents}}{{money .RateCents}}{{else}}—{{end}}</td>
+          <td class="right nowrap">{{if .TermsDays}}Net {{.TermsDays}}{{else}}—{{end}}</td>
+          <td class="right">{{.InvoiceCount}}</td>
+          <td class="right nowrap">
+            <a class="btn btn-sm" href="/invoices/new?client_id={{.ID}}">Invoice</a>
+            <a class="btn btn-sm" href="/clients/{{.ID}}/edit">Edit</a>
+            <form class="inline" method="post" action="/clients/{{.ID}}/delete"
+                  data-confirm="Delete {{.Name}}? Existing invoices keep their saved billing details.">
+              <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{end}}
+    </tbody>
+  </table>
+{{else}}
+  <div class="empty">
+    <p>No clients yet.</p>
+    <a class="btn btn-primary" href="/clients/new">Add a client</a>
+  </div>
+{{end}}
+{{end}}
